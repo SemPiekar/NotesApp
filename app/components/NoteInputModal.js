@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   StyleSheet,
@@ -11,12 +11,19 @@ import {
 import tw from "twrnc";
 import RoundIconBtn from "./RoundIconBtn";
 
-const NoteInputModal = ({ visible, onClose, onSubmit }) => {
+const NoteInputModal = ({ visible, onClose, onSubmit, note, isEdit }) => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const handleModalClose = () => {
     Keyboard.dismiss();
   };
+
+  useEffect(() => {
+    if (isEdit) {
+      setTitle(note.title);
+      setDesc(note.desc);
+    }
+  }, [isEdit]);
 
   const handleOnChangeText = (text, valueFor) => {
     if (valueFor === "title") setTitle(text);
@@ -25,17 +32,24 @@ const NoteInputModal = ({ visible, onClose, onSubmit }) => {
 
   const handleSubmit = () => {
     if (!title.trim() && !desc.trim()) return onClose();
-    onSubmit(title, desc);
-    setTitle("");
-    setDesc("");
+
+    if (isEdit) {
+      onSubmit(title, desc, Date.now());
+    } else {
+      onSubmit(title, desc);
+      setTitle("");
+      setDesc("");
+    }
     onClose();
   };
 
-const closeModal = () => {
-    setTitle("");
-    setDesc("");
+  const closeModal = () => {
+    if (!isEdit) {
+      setTitle("");
+      setDesc("");
+    }
     onClose();
-}
+  };
 
   return (
     <>

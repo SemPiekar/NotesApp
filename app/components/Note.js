@@ -9,7 +9,7 @@ const Note = ({ item, onPress }) => {
     return (
         
         <TouchableOpacity onPress={onPress} style={[tw`bg-[#dbb2ff] p-4 rounded-md`, { width: containerWidth }]}>
-            <Text style={tw`font-bold text-lg`} numberOfLines={2}>{title}</Text>
+            <Text style={tw`font-bold text-lg `} numberOfLines={2}>{title}</Text>
             <Text numberOfLines={3}>{desc}</Text>
         </TouchableOpacity>
     );

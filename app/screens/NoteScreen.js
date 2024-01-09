@@ -8,6 +8,7 @@ import {
   Keyboard,
   FlatList,
 } from "react-native";
+import { useNotes } from "../contexts/NoteProvider";
 import tw from "twrnc";
 import colors from "../misc/colors";
 import SearchBar from "../components/SearchBar";
@@ -15,11 +16,14 @@ import RoundIconBtn from "../components/RoundIconBtn";
 import NoteInputModal from "../components/NoteInputModal";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Note from "../components/Note";
+import NotFound from "../components/NotFound";
 
-const NoteScreen = ({ user }) => {
+const NoteScreen = ({ user, navigation }) => {
   const [greet, setGreet] = useState("Evening");
   const [modalVisible, setModalVisible] = useState(false);
-  const [notes, setNotes] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { notes, setNotes, findNotes } = useNotes();
+  const [resultNotFound, setResultNotFound] = useState(false);
 
   const findGreet = () => {
     const hrs = new Date().getHours();
@@ -28,14 +32,7 @@ const NoteScreen = ({ user }) => {
     setGreet("Evening");
   };
 
-  const findNotes = async () => {
-    const result = await AsyncStorage.getItem("notes");
-    console.log(result);
-    if (result !== null) setNotes(JSON.parse(result));
-  };
-
   useEffect(() => {
-    findNotes();
     findGreet();
   }, []);
 
@@ -46,6 +43,36 @@ const NoteScreen = ({ user }) => {
     await AsyncStorage.setItem("notes", JSON.stringify(updatedNotes));
   };
 
+  const openNote = (note) => {
+    navigation.navigate("NoteDetail", { note });
+  };
+
+  const handleOnSearchInput = async (text) => {
+    setSearchQuery(text);
+    if (!text.trim()) {
+      setSearchQuery("");
+      setResultNotFound(false);
+      return await findNotes();
+    }
+    const filteredNotes = notes.filter((note) => {
+      if (note.title.toLowerCase().includes(text.toLowerCase())) {
+        return note;
+      }
+    });
+
+    if (filteredNotes.length) {
+      setNotes([...filteredNotes]);
+    } else {
+      setResultNotFound(true);
+    }
+  };
+
+  const handleOnClear = async () => {
+    setSearchQuery("");
+    setResultNotFound(false);
+    await findNotes();
+  };
+
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor={colors.LIGHT} />
@@ -54,15 +81,28 @@ const NoteScreen = ({ user }) => {
           <Text
             style={tw`text-xl font-bold mt-6`}
           >{`Good ${greet} ${user.name}`}</Text>
-          {notes.length ? (<SearchBar style={tw`my-12`} />) : null}
-          
-          <FlatList
-            data={notes}
-            numColumns={2}
-            columnWrapperStyle={tw`justify-between mb-4`}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => <Note onPress={() => console.log('Pressing')} item={item} />}
-          />
+          {notes.length ? (
+            <SearchBar
+              value={searchQuery}
+              onChangeText={handleOnSearchInput}
+              style={tw`my-12`}
+              onClear={handleOnClear}
+            />
+          ) : null}
+
+          {resultNotFound ? (
+            <NotFound />
+          ) : (
+            <FlatList
+              data={notes}
+              numColumns={2}
+              columnWrapperStyle={tw`justify-between mb-4`}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <Note onPress={() => openNote(item)} item={item} />
+              )}
+            />
+          )}
           {!notes.length ? (
             <View
               style={[
@@ -75,7 +115,7 @@ const NoteScreen = ({ user }) => {
           ) : null}
         </View>
       </TouchableWithoutFeedback>
-      <View style={tw`absolute right-8 bottom-16 z-1`}>
+      <View style={tw`absolute right-8 bottom-16 z-10`}>
         <RoundIconBtn
           onPress={() => setModalVisible(true)}
           antIconName="plus"
