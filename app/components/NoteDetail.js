@@ -1,3 +1,6 @@
+// Displays the detailed view of a selected note, allowing users to edit or delete it.
+// Manages note updates, deletions, and provides an option to edit notes.
+
 import React, { useState } from "react";
 import { Text, View, ScrollView } from "react-native";
 import { Alert } from "react-native";
@@ -7,6 +10,7 @@ import RoundIconBtn from "./RoundIconBtn";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NoteInputModal from "./NoteInputModal";
 
+// Function to format date
 const formatDate = (ms) => {
   const date = new Date(ms);
   const day = date.getDate();
@@ -20,11 +24,13 @@ const formatDate = (ms) => {
 };
 
 const NoteDetail = (props) => {
+  // State variables
   const [note, setNote] = useState(props.route.params.note);
   const { setNotes } = useNotes();
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
 
+  // Function to delete a note
   const deleteNote = async () => {
     const result = await AsyncStorage.getItem("notes");
     let notes = [];
@@ -36,6 +42,7 @@ const NoteDetail = (props) => {
     props.navigation.goBack();
   };
 
+  // Function to display delete confirmation alert
   const displayDeleteAlert = () => {
     Alert.alert(
       "Are You Sure?",
@@ -50,6 +57,7 @@ const NoteDetail = (props) => {
     );
   };
 
+  // Function to handle note update
   const handleUpdate = async (title, desc, time) => {
     const result = await AsyncStorage.getItem("notes");
     let notes = [];
@@ -72,6 +80,7 @@ const NoteDetail = (props) => {
   };
   const handleOnClose = () => setShowModal(false);
 
+  // Function to open edit modal
   const openEditModal = () => {
     setIsEdit(true);
     setShowModal(true);
@@ -80,6 +89,7 @@ const NoteDetail = (props) => {
   return (
     <>
       <ScrollView style={tw`pt-14 px-8`}>
+        {/* Display last updated or created time */}
         <Text style={tw`text-xs opacity-50 text-right`}>
           {note.isUpdated
             ? `Updated At ${formatDate(note.time)}`
@@ -89,6 +99,7 @@ const NoteDetail = (props) => {
         <Text style={tw`text-xl opacity-60`}>{note.desc}</Text>
       </ScrollView>
 
+      {/* Action buttons */}
       <View style={tw`absolute right-8 bottom-16`}>
         <RoundIconBtn
           antIconName="delete"
@@ -97,6 +108,7 @@ const NoteDetail = (props) => {
         />
         <RoundIconBtn antIconName="edit" onPress={openEditModal} />
       </View>
+      {/* Note input modal */}
       <NoteInputModal
         isEdit={isEdit}
         note={note}

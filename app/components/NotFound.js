@@ -1,3 +1,6 @@
+// Component displayed when no notes are found in the NoteScreen.
+// Shows a frowning emoji and a message.
+
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
@@ -6,7 +9,10 @@ import tw from "twrnc";
 const NotFound = () => {
   return (
     <View>
+      {/* Frowning emoji */}
       <AntDesign name="frowno" size={90} color="black" />
+
+      {/* Text message */}
       <Text
         style={[
           StyleSheet.absoluteFillObject,

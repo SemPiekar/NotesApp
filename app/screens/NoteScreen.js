@@ -1,3 +1,6 @@
+// Displays the main screen of the app, showing a list of notes and providing options to add, search, and manage notes.
+// Fetches user data, greets the user based on the time of day, and handles note CRUD operations.
+
 import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -19,12 +22,14 @@ import Note from "../components/Note";
 import NotFound from "../components/NotFound";
 
 const NoteScreen = ({ user, navigation }) => {
+  // State variables
   const [greet, setGreet] = useState("Evening");
   const [modalVisible, setModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { notes, setNotes, findNotes } = useNotes();
   const [resultNotFound, setResultNotFound] = useState(false);
 
+  // Function to determine the greeting based on the time of day
   const findGreet = () => {
     const hrs = new Date().getHours();
     if (hrs === 0 || hrs < 12) return setGreet("Morning");
@@ -32,10 +37,12 @@ const NoteScreen = ({ user, navigation }) => {
     setGreet("Evening");
   };
 
+  // Effect hook to fetch user data and set the greeting on component mount
   useEffect(() => {
     findGreet();
   }, []);
 
+  // Function to handle note submission
   const handleOnSubmit = async (title, desc) => {
     const note = { id: Date.now(), title, desc, time: Date.now() };
     const updatedNotes = [...notes, note];
@@ -43,10 +50,12 @@ const NoteScreen = ({ user, navigation }) => {
     await AsyncStorage.setItem("notes", JSON.stringify(updatedNotes));
   };
 
+  // Function to open a selected note for detailed view
   const openNote = (note) => {
     navigation.navigate("NoteDetail", { note });
   };
 
+  // Function to handle search input
   const handleOnSearchInput = async (text) => {
     setSearchQuery(text);
     if (!text.trim()) {
@@ -67,6 +76,7 @@ const NoteScreen = ({ user, navigation }) => {
     }
   };
 
+  // Function to handle search input clearing
   const handleOnClear = async () => {
     setSearchQuery("");
     setResultNotFound(false);
@@ -76,11 +86,15 @@ const NoteScreen = ({ user, navigation }) => {
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor={colors.LIGHT} />
+      {/* TouchableWithoutFeedback to dismiss the keyboard on outside press */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={tw`px-[20] flex-1 z-10`}>
+          {/* Greeting text */}
           <Text
             style={tw`text-xl font-bold mt-6`}
           >{`Good ${greet} ${user.name}`}</Text>
+
+          {/* SearchBar component for note search */}
           {notes.length ? (
             <SearchBar
               value={searchQuery}
@@ -90,6 +104,7 @@ const NoteScreen = ({ user, navigation }) => {
             />
           ) : null}
 
+          {/* Conditional rendering based on search results */}
           {resultNotFound ? (
             <NotFound />
           ) : (
@@ -103,6 +118,8 @@ const NoteScreen = ({ user, navigation }) => {
               )}
             />
           )}
+
+          {/* Display message if no notes are available */}
           {!notes.length ? (
             <View
               style={[
@@ -115,6 +132,8 @@ const NoteScreen = ({ user, navigation }) => {
           ) : null}
         </View>
       </TouchableWithoutFeedback>
+
+      {/* Floating action button to add a new note */}
       <View style={tw`absolute right-8 bottom-16 z-10`}>
         <RoundIconBtn
           onPress={() => setModalVisible(true)}
@@ -124,6 +143,8 @@ const NoteScreen = ({ user, navigation }) => {
           style={{ borderRadius: 30, backgroundColor: colors.PRIMARY }}
         />
       </View>
+
+      {/* Note input modal */}
       <NoteInputModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}

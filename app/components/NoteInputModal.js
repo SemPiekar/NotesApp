@@ -1,3 +1,6 @@
+// Modal component for adding or editing notes.
+// Provides input fields for title and description.
+
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
@@ -12,24 +15,30 @@ import tw from "twrnc";
 import RoundIconBtn from "./RoundIconBtn";
 
 const NoteInputModal = ({ visible, onClose, onSubmit, note, isEdit }) => {
+  // State variables
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
+
+  // Function to handle modal close
   const handleModalClose = () => {
     Keyboard.dismiss();
   };
 
   useEffect(() => {
+    // Populate fields if editing an existing note
     if (isEdit) {
       setTitle(note.title);
       setDesc(note.desc);
     }
   }, [isEdit]);
 
+  // Function to handle text input changes
   const handleOnChangeText = (text, valueFor) => {
     if (valueFor === "title") setTitle(text);
     if (valueFor === "desc") setDesc(text);
   };
 
+  // Function to handle form submission
   const handleSubmit = () => {
     if (!title.trim() && !desc.trim()) return onClose();
 
@@ -43,6 +52,7 @@ const NoteInputModal = ({ visible, onClose, onSubmit, note, isEdit }) => {
     onClose();
   };
 
+  // Function to close modal
   const closeModal = () => {
     if (!isEdit) {
       setTitle("");
@@ -70,6 +80,7 @@ const NoteInputModal = ({ visible, onClose, onSubmit, note, isEdit }) => {
             onChangeText={(text) => handleOnChangeText(text, "desc")}
           />
 
+          {/* Buttons for submitting and closing the modal */}
           <View style={tw`flex-row justify-center py-8`}>
             <RoundIconBtn
               size={15}
@@ -86,6 +97,8 @@ const NoteInputModal = ({ visible, onClose, onSubmit, note, isEdit }) => {
             ) : null}
           </View>
         </View>
+
+        {/* TouchableWithoutFeedback to close the modal when tapping outside */}
         <TouchableWithoutFeedback onPress={handleModalClose}>
           <View style={[StyleSheet.absoluteFillObject, tw`flex-1 -z-10`]} />
         </TouchableWithoutFeedback>
